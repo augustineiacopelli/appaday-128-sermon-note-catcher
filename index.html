@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sermon Note Catcher - AppADay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #2f6b47;
+    --accent-dark: #1f4a30;
+    --accent-ink: #f5f7ef;
+    --gold: #b8892f;
+    --cream: #faf6ee;
+    --cream-dark: #f0e8d8;
+    --ink: #2b2420;
+    --muted: #7a7167;
+    --line: #ddd2bd;
+    --ok: #3f6b3f;
+    --warn: #9a5a1f;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100dvh;
+    background-color: var(--cream);
+    background-image:
+      repeating-linear-gradient(45deg, rgba(184,137,47,0.05) 0, rgba(184,137,47,0.05) 1px, transparent 1px, transparent 13px),
+      repeating-linear-gradient(-45deg, rgba(107,30,35,0.03) 0, rgba(107,30,35,0.03) 1px, transparent 1px, transparent 13px);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+  h1, h2, h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    margin: 0;
+  }
+  a { color: var(--accent); }
+  .cross-icon { display: inline-flex; flex-shrink: 0; }
+  .cross-icon rect { fill: currentColor; }
+  .ornament {
+    display: block;
+    width: 100%;
+    height: 16px;
+    color: var(--gold);
+    opacity: 0.85;
+  }
+  header.app-header, footer.app-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem clamp(0.75rem, 3vw, 1.5rem);
+    background: var(--accent);
+    color: var(--accent-ink);
+    flex-wrap: wrap;
+    transition: background 0.4s ease;
+  }
+  header.app-header .title-block { display: flex; align-items: center; gap: 0.5rem; }
+  header.app-header .title-text { display: flex; flex-direction: column; }
+  header.app-header h1 { font-size: clamp(1.1rem, 3.5vw, 1.5rem); color: var(--accent-ink); }
+  header.app-header .app-num { font-size: 0.7rem; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; }
+  header.app-header .liturgical-color-tag { font-size: 0.7rem; letter-spacing: 0.04em; color: var(--accent-ink); opacity: 0.85; }
+  .portal-link {
+    color: var(--accent-ink) !important;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: 1px solid rgba(250,246,238,0.5);
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .header-actions, .footer-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 8px;
+    border: 1px solid rgba(250,246,238,0.5);
+    background: transparent;
+    color: var(--accent-ink);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+  }
+  .icon-btn:active { background: rgba(250,246,238,0.15); }
+  main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1rem clamp(0.75rem, 4vw, 1.5rem) 2rem;
+  }
+  .screen { display: none; flex-direction: column; gap: 1rem; flex: 1 1 auto; }
+  .screen.active { display: flex; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem clamp(0.85rem, 3vw, 1.25rem);
+  }
+  .card h2, .card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent);
+  }
+  .card h2 .cross-icon, .card h3 .cross-icon { color: var(--gold); width: 16px; height: 16px; }
+  .field-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.9rem; }
+  .field-group:last-child { margin-bottom: 0; }
+  label { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+  input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 44px;
+    width: 100%;
+  }
+  textarea { min-height: 90px; resize: vertical; line-height: 1.4; }
+  textarea.tall { min-height: 160px; }
+  .suggested-label {
+    display: none;
+    font-size: 0.7rem;
+    color: var(--ok);
+    font-weight: 600;
+    margin-left: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .btn {
+    min-height: 44px;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:active { background: var(--accent-dark); }
+  .btn-secondary { background: var(--cream-dark); color: var(--ink); border: 1px solid var(--line); }
+  .btn-gold { background: var(--gold); color: #2b2005; }
+  .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .btn-block { width: 100%; }
+  .toggle-row { display: flex; gap: 0.5rem; }
+  .toggle-row .btn { flex: 1 1 0; }
+  .toggle-row .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .toggle-row .btn[aria-pressed="false"] { background: var(--cream-dark); color: var(--ink); }
+  .reading-list { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.95rem; }
+  .reading-list .row { display: flex; justify-content: space-between; gap: 0.5rem; border-bottom: 1px dotted var(--line); padding-bottom: 0.3rem; }
+  .reading-list .row span:first-child { color: var(--muted); }
+  .reading-list .row.liturgical-row span:last-child { font-weight: 600; color: var(--accent); }
+  .loading-wrap { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.75rem; text-align: center; }
+  .spinner { width: 36px; height: 36px; border: 4px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-line { font-size: 0.8rem; color: var(--muted); min-height: 1.2em; }
+  .status-line.ok { color: var(--ok); }
+  .status-line.warn { color: var(--warn); }
+  .mic-btn {
+    min-height: 56px;
+    border-radius: 999px;
+    border: 2px solid var(--accent);
+    background: var(--cream);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .mic-btn.recording { background: var(--accent); color: var(--accent-ink); }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .history-item .hi-date { font-weight: 600; }
+  .history-item .hi-name { color: var(--muted); font-size: 0.85rem; }
+  .empty-note { color: var(--muted); font-size: 0.9rem; padding: 1rem 0; }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(43,36,32,0.55);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 50;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: var(--cream);
+    border-radius: 14px;
+    padding: 1.25rem;
+    width: 100%;
+    max-width: 420px;
+    max-height: 85dvh;
+    overflow-y: auto;
+  }
+  .modal-box h2 { font-size: 1.3rem; margin-bottom: 0.75rem; }
+  .checkbox-row { display: flex; align-items: center; gap: 0.6rem; min-height: 44px; }
+  .checkbox-row input[type="checkbox"] { width: 22px; height: 22px; }
+  .small-note { font-size: 0.75rem; color: var(--muted); }
+  .divider { height: 1px; background: var(--line); margin: 0.5rem 0 1rem; border: none; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="title-block">
+    <span class="cross-icon" style="width:22px;height:22px;">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+        <rect x="10" y="2" width="4" height="20" rx="1"></rect>
+        <rect x="3" y="9" width="18" height="4" rx="1"></rect>
+      </svg>
+    </span>
+    <div class="title-text">
+      <span class="app-num">AppADay 128</span>
+      <h1>Sermon Note Catcher</h1>
+      <span class="liturgical-color-tag" id="headerLiturgicalTag">Liturgical color: Green</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="btnHistoryHeader" title="History" aria-label="History">History</button>
+    <button class="icon-btn" id="btnSettingsHeader" title="Settings" aria-label="Settings">Settings</button>
+    <a class="portal-link" href="https://augustineiacopelli.github.io/appaday/">AppADay</a>
+  </div>
+</header>
+<svg class="ornament" viewBox="0 0 200 16" preserveAspectRatio="none" aria-hidden="true">
+  <line x1="0" y1="8" x2="85" y2="8" stroke="currentColor" stroke-width="1"></line>
+  <line x1="115" y1="8" x2="200" y2="8" stroke="currentColor" stroke-width="1"></line>
+  <rect x="96.5" y="2" width="3" height="12" rx="1" fill="currentColor"></rect>
+  <rect x="90" y="6.5" width="16" height="3" rx="1" fill="currentColor"></rect>
+</svg>
+
+<main>
+
+  <section class="screen" id="screen-loading">
+    <div class="loading-wrap">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Looking up today's Mass readings...</p>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-confirm">
+    <div class="card">
+      <h2><span class="cross-icon" style="width:15px;height:15px;"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><rect x="10" y="2" width="4" height="20" rx="1"></rect><rect x="3" y="9" width="18" height="4" rx="1"></rect></svg></span><span>Confirm this Mass</span></h2>
+      <div class="field-group" id="saturdayToggleWrap" style="display:none;">
+        <label>Which Mass are you attending</label>
+        <div class="toggle-row">
+          <button class="btn" id="btnToggleVigil" type="button" aria-pressed="true">This evening</button>
+          <button class="btn" id="btnToggleSunday" type="button" aria-pressed="false">Tomorrow (Sunday)</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label for="confirmName">Mass or celebration name</label>
+        <input type="text" id="confirmName">
+      </div>
+      <div class="field-group">
+        <label for="confirmSeason">Liturgical season</label>
+        <input type="text" id="confirmSeason">
+      </div>
+      <div class="field-group">
+        <label>Liturgical color</label>
+        <p class="status-line" id="confirmColorLabel" style="color:var(--accent); font-weight:600; font-size:0.95rem;">Green</p>
+      </div>
+      <div class="field-group">
+        <label for="confirmFirst">First reading</label>
+        <input type="text" id="confirmFirst">
+      </div>
+      <div class="field-group">
+        <label for="confirmPsalm">Responsorial psalm</label>
+        <input type="text" id="confirmPsalm">
+      </div>
+      <div class="field-group">
+        <label for="confirmSecond">Second reading (if any)</label>
+        <input type="text" id="confirmSecond">
+      </div>
+      <div class="field-group">
+        <label for="confirmGospel">Gospel</label>
+        <input type="text" id="confirmGospel">
+      </div>
+      <p class="status-line warn" id="confirmReviewNote" style="display:none;">Could not confirm this online. Use the official USCCB page below to check and edit the fields above before continuing.</p>
+      <div class="btn-row">
+        <a class="btn btn-secondary btn-block" id="confirmUsccbLink" href="#" target="_blank" rel="noopener">Open official USCCB readings</a>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-block" id="btnContinueToNote">Continue to notes</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-note">
+    <div class="card">
+      <h3><span class="cross-icon" style="width:15px;height:15px;"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><rect x="10" y="2" width="4" height="20" rx="1"></rect><rect x="3" y="9" width="18" height="4" rx="1"></rect></svg></span><span id="noteMassName">Mass name</span></h3>
+      <div class="reading-list" id="noteReadingList"></div>
+    </div>
+
+    <div class="card">
+      <div class="field-group">
+        <label>Listen and capture</label>
+        <button class="mic-btn" id="btnMic" type="button" style="display:none;">Tap to start listening</button>
+        <p class="small-note" id="micHint" style="display:none;">Tap once to start, tap again to stop when the homily ends.</p>
+      </div>
+      <div class="field-group">
+        <label for="rawTranscript">Raw transcript</label>
+        <textarea id="rawTranscript" class="tall" placeholder="Speech will appear here, or type your own notes if voice capture is unavailable."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btnCleanUp" type="button" style="display:none;">Clean up notes</button>
+      </div>
+      <div class="field-group">
+        <label for="parsedTranscript">Parsed notes</label>
+        <textarea id="parsedTranscript" class="tall" placeholder="Cleaned-up paragraphs will appear here."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btnCopyParsed" type="button">Copy parsed notes</button>
+      </div>
+      <p class="status-line" id="aiStatusLine"></p>
+    </div>
+
+    <div class="card">
+      <div class="field-group">
+        <label for="themeInput">Theme</label>
+        <input type="text" id="themeInput" placeholder="What was this homily about">
+      </div>
+      <div class="field-group">
+        <label for="takeawayInput">Takeaway <span class="suggested-label" id="takeawaySuggestedLabel">Suggested</span></label>
+        <textarea id="takeawayInput" placeholder="The main point that stuck with you"></textarea>
+      </div>
+      <div class="field-group">
+        <label for="actionInput">Action item <span class="suggested-label" id="actionSuggestedLabel">Suggested</span></label>
+        <textarea id="actionInput" placeholder="One concrete thing to do this week"></textarea>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary btn-block" id="btnSaveEntry">Save entry</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="btnEmailEntry" type="button">Email this entry</button>
+      <button class="btn btn-secondary" id="btnBackFromNote" type="button">Back</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-history">
+    <div class="card">
+      <h2><span class="cross-icon" style="width:15px;height:15px;"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><rect x="10" y="2" width="4" height="20" rx="1"></rect><rect x="3" y="9" width="18" height="4" rx="1"></rect></svg></span><span>Your saved entries</span></h2>
+      <div id="historyList"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-block" id="btnNewFromHistory">New entry</button>
+    </div>
+  </section>
+
+</main>
+
+<svg class="ornament" viewBox="0 0 200 16" preserveAspectRatio="none" aria-hidden="true">
+  <line x1="0" y1="8" x2="85" y2="8" stroke="currentColor" stroke-width="1"></line>
+  <line x1="115" y1="8" x2="200" y2="8" stroke="currentColor" stroke-width="1"></line>
+  <rect x="96.5" y="2" width="3" height="12" rx="1" fill="currentColor"></rect>
+  <rect x="90" y="6.5" width="16" height="3" rx="1" fill="currentColor"></rect>
+</svg>
+<footer class="app-footer">
+  <a class="portal-link" href="https://augustineiacopelli.github.io/appaday/">AppADay</a>
+  <div class="footer-actions">
+    <button class="icon-btn" id="btnHistoryFooter" title="History" aria-label="History">History</button>
+    <button class="icon-btn" id="btnNewFooter" title="New entry" aria-label="New entry">New</button>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="settingsOverlay">
+  <div class="modal-box">
+    <h2><span class="cross-icon" style="width:15px;height:15px;"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false"><rect x="10" y="2" width="4" height="20" rx="1"></rect><rect x="3" y="9" width="18" height="4" rx="1"></rect></svg></span><span>Settings</span></h2>
+    <div class="field-group">
+      <label for="settingsEmail">Email address for sending entries</label>
+      <input type="email" id="settingsEmail" placeholder="you@example.com">
+    </div>
+    <hr class="divider">
+    <div class="checkbox-row">
+      <input type="checkbox" id="settingsAiEnabled">
+      <label for="settingsAiEnabled">Use Claude to refine takeaway and action item</label>
+    </div>
+    <div class="field-group">
+      <label for="settingsApiKey">Claude API key</label>
+      <input type="password" id="settingsApiKey" placeholder="sk-ant-...">
+      <p class="small-note">Stored only on this device. Never shown on the main screen.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-block" id="btnSaveSettings">Save settings</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary btn-block" id="btnCloseSettings">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var CLAUDE_MODEL = 'claude-sonnet-5';
+  var STORAGE_ENTRIES_KEY = 'sermonNoteCatcherEntries';
+  var STORAGE_SETTINGS_KEY = 'sermonNoteCatcherSettings';
+
+  var LITURGICAL_PALETTES = {
+    green: { accent: '#2f6b47', dark: '#1f4a30', ink: '#f5f7ef', label: 'Green' },
+    violet: { accent: '#4b2e6b', dark: '#33204a', ink: '#f4eefb', label: 'Violet' },
+    white: { accent: '#8a6a1f', dark: '#6b5218', ink: '#fffdf5', label: 'White and Gold' },
+    red: { accent: '#7a1f24', dark: '#571519', ink: '#fbecec', label: 'Red' },
+    rose: { accent: '#b5657a', dark: '#8f4a5c', ink: '#fff5f7', label: 'Rose' }
+  };
+
+  function liturgicalColorKeyFor(massData) {
+    if (!massData) return 'green';
+    var season = (massData.season || '').toLowerCase();
+    var name = (massData.displayName || '').toLowerCase();
+
+    var redPatterns = [
+      /martyr/, /pentecost/, /palm sunday/, /passion sunday/,
+      /good friday/, /triumph of the (holy )?cross/, /exaltation of the (holy )?cross/,
+      /precious blood/
+    ];
+    for (var i = 0; i < redPatterns.length; i++) {
+      if (redPatterns[i].test(name)) return 'red';
+    }
+    if (/gaudete/.test(name)) return 'rose';
+    if (/laetare/.test(name)) return 'rose';
+
+    if (season.indexOf('advent') !== -1) return 'violet';
+    if (season.indexOf('lent') !== -1) return 'violet';
+    if (season.indexOf('christmas') !== -1) return 'white';
+    if (season.indexOf('easter') !== -1) return 'white';
+    if (season.indexOf('ordinary') !== -1) return 'green';
+    return 'green';
+  }
+
+  function applyLiturgicalTheme(massData) {
+    var key = liturgicalColorKeyFor(massData);
+    var palette = LITURGICAL_PALETTES[key] || LITURGICAL_PALETTES.green;
+    var rootStyle = document.documentElement.style;
+    rootStyle.setProperty('--accent', palette.accent);
+    rootStyle.setProperty('--accent-dark', palette.dark);
+    rootStyle.setProperty('--accent-ink', palette.ink);
+
+    var headerTag = document.getElementById('headerLiturgicalTag');
+    if (headerTag) headerTag.textContent = 'Liturgical color: ' + palette.label;
+
+    var confirmLabel = document.getElementById('confirmColorLabel');
+    if (confirmLabel) confirmLabel.textContent = palette.label;
+
+    var noteLabel = document.getElementById('noteColorLabel');
+    if (noteLabel) noteLabel.textContent = palette.label;
+
+    return palette.label;
+  }
+
+  var currentScreen = 'loading';
+  var massDataToday = null;
+  var massDataSunday = null;
+  var activeMassData = null;
+  var isSaturdayFlow = false;
+  var editingKey = null;
+
+  var recognition = null;
+  var recognitionSupported = false;
+  var isRecording = false;
+  var recognitionSegments = [];
+  var interimBuffer = '';
+  var confirmedBuffer = '';
+
+  function showScreen(name) {
+    currentScreen = name;
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) {
+      screens[i].classList.remove('active');
+    }
+    var target = document.getElementById('screen-' + name);
+    if (target) target.classList.add('active');
+  }
+
+  function openSettings() {
+    document.getElementById('settingsOverlay').classList.add('active');
+  }
+  function closeSettings() {
+    document.getElementById('settingsOverlay').classList.remove('active');
+  }
+
+  function loadSettings() {
+    var defaults = { email: '', apiKey: '', aiEnabled: false };
+    try {
+      var raw = localStorage.getItem(STORAGE_SETTINGS_KEY);
+      if (!raw) return defaults;
+      var parsed = JSON.parse(raw);
+      return {
+        email: parsed.email || '',
+        apiKey: parsed.apiKey || '',
+        aiEnabled: !!parsed.aiEnabled
+      };
+    } catch (err) {
+      return defaults;
+    }
+  }
+
+  function saveSettings(settings) {
+    try {
+      localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(settings));
+    } catch (err) {
+      /* localStorage unavailable, settings will not persist this session */
+    }
+  }
+
+  function loadEntries() {
+    try {
+      var raw = localStorage.getItem(STORAGE_ENTRIES_KEY);
+      if (!raw) return {};
+      return JSON.parse(raw) || {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function saveEntries(entries) {
+    try {
+      localStorage.setItem(STORAGE_ENTRIES_KEY, JSON.stringify(entries));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function dateKeys(d) {
+    d = d || new Date();
+    var yyyy = d.getFullYear();
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return {
+      storageKey: yyyy + '-' + mm + '-' + dd,
+      apiPath: mm + '-' + dd,
+      year: String(yyyy)
+    };
+  }
+
+  function getDayOfWeek(d) {
+    return (d || new Date()).getDay();
+  }
+
+  function usccbLinkFor(dk) {
+    var parts = dk.apiPath.split('-');
+    var mm = parts[0];
+    var dd = parts[1];
+    var yy = dk.year.slice(-2);
+    return 'https://bible.usccb.org/bible/readings/' + mm + dd + yy + '.cfm';
+  }
+
+  function formatDisplayDate(storageKey) {
+    var parts = storageKey.split('-');
+    var d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    try {
+      return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    } catch (err) {
+      return storageKey;
+    }
+  }
+
+  async function fetchMassData(dk) {
+    var result = {
+      date: dk.storageKey,
+      displayName: '',
+      season: '',
+      readings: { firstReading: '', psalm: '', secondReading: '', gospel: '' },
+      needsReview: false,
+      usccbLink: usccbLinkFor(dk)
+    };
+    try {
+      var readingsUrl = 'https://cpbjr.github.io/catholic-readings-api/readings/' + dk.year + '/' + dk.apiPath + '.json';
+      var calendarUrl = 'https://cpbjr.github.io/catholic-readings-api/liturgical-calendar/' + dk.year + '/' + dk.apiPath + '.json';
+      var settled = await Promise.allSettled([fetch(readingsUrl), fetch(calendarUrl)]);
+      var readingsData = null;
+      var calendarData = null;
+
+      if (settled[0].status === 'fulfilled' && settled[0].value.ok) {
+        readingsData = await settled[0].value.json();
+      }
+      if (settled[1].status === 'fulfilled' && settled[1].value.ok) {
+        calendarData = await settled[1].value.json();
+      }
+
+      if (readingsData) {
+        result.season = readingsData.season || '';
+        if (readingsData.usccbLink) result.usccbLink = readingsData.usccbLink;
+        if (readingsData.readings) {
+          result.readings.firstReading = readingsData.readings.firstReading || '';
+          result.readings.psalm = readingsData.readings.psalm || '';
+          result.readings.secondReading = readingsData.readings.secondReading || '';
+          result.readings.gospel = readingsData.readings.gospel || '';
+        }
+      }
+      if (calendarData) {
+        if (!result.season && calendarData.season) result.season = calendarData.season;
+        if (calendarData.celebration && calendarData.celebration.name) {
+          result.displayName = calendarData.celebration.name;
+        }
+      }
+      if (!result.displayName) {
+        result.displayName = 'Mass of ' + formatDisplayDate(dk.storageKey);
+      }
+      if (!readingsData && !calendarData) {
+        result.needsReview = true;
+      }
+    } catch (err) {
+      result.needsReview = true;
+      result.displayName = result.displayName || ('Mass of ' + formatDisplayDate(dk.storageKey));
+      result.usccbLink = result.usccbLink || usccbLinkFor(dk);
+    }
+    return result;
+  }
+
+  function resolveDefaultMass() {
+    var hour = new Date().getHours();
+    if (hour >= 16) {
+      return massDataSunday;
+    }
+    return massDataToday;
+  }
+
+  async function initMassData() {
+    showScreen('loading');
+    var now = new Date();
+    var dow = getDayOfWeek(now);
+    var dkToday = dateKeys(now);
+
+    if (dow === 6) {
+      isSaturdayFlow = true;
+      var sundayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      var dkSunday = dateKeys(sundayDate);
+      var results = await Promise.allSettled([fetchMassData(dkToday), fetchMassData(dkSunday)]);
+      massDataToday = results[0].status === 'fulfilled' ? results[0].value : {
+        date: dkToday.storageKey, displayName: 'Vigil Mass', season: '',
+        readings: { firstReading: '', psalm: '', secondReading: '', gospel: '' }, needsReview: true,
+        usccbLink: usccbLinkFor(dkToday)
+      };
+      massDataSunday = results[1].status === 'fulfilled' ? results[1].value : {
+        date: dkSunday.storageKey, displayName: 'Sunday Mass', season: '',
+        readings: { firstReading: '', psalm: '', secondReading: '', gospel: '' }, needsReview: true,
+        usccbLink: usccbLinkFor(dkSunday)
+      };
+      activeMassData = resolveDefaultMass();
+    } else {
+      isSaturdayFlow = false;
+      massDataToday = await fetchMassData(dkToday);
+      activeMassData = massDataToday;
+    }
+
+    renderConfirmScreen();
+    showScreen('confirm');
+  }
+
+  function renderConfirmScreen() {
+    applyLiturgicalTheme(activeMassData);
+    var wrap = document.getElementById('saturdayToggleWrap');
+    wrap.style.display = isSaturdayFlow ? 'flex' : 'none';
+    if (isSaturdayFlow) {
+      var vigilActive = activeMassData === massDataToday;
+      document.getElementById('btnToggleVigil').setAttribute('aria-pressed', vigilActive ? 'true' : 'false');
+      document.getElementById('btnToggleSunday').setAttribute('aria-pressed', vigilActive ? 'false' : 'true');
+    }
+    document.getElementById('confirmName').value = activeMassData.displayName || '';
+    document.getElementById('confirmSeason').value = activeMassData.season || '';
+    document.getElementById('confirmFirst').value = activeMassData.readings.firstReading || '';
+    document.getElementById('confirmPsalm').value = activeMassData.readings.psalm || '';
+    document.getElementById('confirmSecond').value = activeMassData.readings.secondReading || '';
+    document.getElementById('confirmGospel').value = activeMassData.readings.gospel || '';
+    document.getElementById('confirmReviewNote').style.display = activeMassData.needsReview ? 'block' : 'none';
+
+    var linkEl = document.getElementById('confirmUsccbLink');
+    linkEl.href = activeMassData.usccbLink || '#';
+    if (activeMassData.needsReview) {
+      linkEl.classList.remove('btn-secondary');
+      linkEl.classList.add('btn-gold');
+      linkEl.textContent = 'Open official USCCB readings for this date';
+    } else {
+      linkEl.classList.remove('btn-gold');
+      linkEl.classList.add('btn-secondary');
+      linkEl.textContent = 'Open official USCCB readings';
+    }
+  }
+
+  document.getElementById('btnToggleVigil').addEventListener('click', function () {
+    activeMassData = massDataToday;
+    renderConfirmScreen();
+  });
+  document.getElementById('btnToggleSunday').addEventListener('click', function () {
+    activeMassData = massDataSunday;
+    renderConfirmScreen();
+  });
+
+  var confirmedMass = null;
+
+  document.getElementById('btnContinueToNote').addEventListener('click', function () {
+    confirmedMass = {
+      date: activeMassData.date,
+      displayName: document.getElementById('confirmName').value.trim() || activeMassData.displayName,
+      season: document.getElementById('confirmSeason').value.trim(),
+      readings: {
+        firstReading: document.getElementById('confirmFirst').value.trim(),
+        psalm: document.getElementById('confirmPsalm').value.trim(),
+        secondReading: document.getElementById('confirmSecond').value.trim(),
+        gospel: document.getElementById('confirmGospel').value.trim()
+      }
+    };
+    editingKey = null;
+    resetNoteFields();
+    renderNoteScreen();
+    showScreen('note');
+  });
+
+  function resetNoteFields() {
+    document.getElementById('themeInput').value = '';
+    document.getElementById('takeawayInput').value = '';
+    document.getElementById('actionInput').value = '';
+    document.getElementById('rawTranscript').value = '';
+    document.getElementById('parsedTranscript').value = '';
+    document.getElementById('takeawaySuggestedLabel').style.display = 'none';
+    document.getElementById('actionSuggestedLabel').style.display = 'none';
+    document.getElementById('aiStatusLine').textContent = '';
+    recognitionSegments = [];
+    interimBuffer = '';
+    confirmedBuffer = '';
+  }
+
+  function renderNoteScreen() {
+    applyLiturgicalTheme(confirmedMass);
+    document.getElementById('noteMassName').textContent = confirmedMass.displayName + ' (' + formatDisplayDate(confirmedMass.date) + ')';
+    var listEl = document.getElementById('noteReadingList');
+    listEl.innerHTML = '';
+    var colorRow = document.createElement('div');
+    colorRow.className = 'row liturgical-row';
+    var colorLabel = document.createElement('span');
+    colorLabel.textContent = 'Liturgical color';
+    var colorValue = document.createElement('span');
+    colorValue.id = 'noteColorLabel';
+    colorValue.textContent = LITURGICAL_PALETTES[liturgicalColorKeyFor(confirmedMass)].label;
+    colorRow.appendChild(colorLabel);
+    colorRow.appendChild(colorValue);
+    listEl.appendChild(colorRow);
+    var rows = [
+      ['Season', confirmedMass.season],
+      ['First reading', confirmedMass.readings.firstReading],
+      ['Psalm', confirmedMass.readings.psalm],
+      ['Second reading', confirmedMass.readings.secondReading],
+      ['Gospel', confirmedMass.readings.gospel]
+    ];
+    rows.forEach(function (r) {
+      if (!r[1]) return;
+      var row = document.createElement('div');
+      row.className = 'row';
+      var label = document.createElement('span');
+      label.textContent = r[0];
+      var value = document.createElement('span');
+      value.textContent = r[1];
+      row.appendChild(label);
+      row.appendChild(value);
+      listEl.appendChild(row);
+    });
+  }
+
+  function setupSpeechRecognition() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      recognitionSupported = false;
+      showManualFallback();
+      return;
+    }
+    try {
+      recognition = new SR();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = function (event) {
+        var interim = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          var text = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            recognitionSegments.push({ text: text, time: Date.now() });
+            confirmedBuffer += (confirmedBuffer ? ' ' : '') + text.trim();
+          } else {
+            interim += text;
+          }
+        }
+        interimBuffer = interim;
+        document.getElementById('rawTranscript').value = (confirmedBuffer + ' ' + interimBuffer).trim();
+      };
+
+      recognition.onerror = function () {
+        recognitionSupported = false;
+        stopRecording();
+        showManualFallback();
+      };
+
+      recognition.onend = function () {
+        isRecording = false;
+        updateMicButton();
+        parseTranscript();
+      };
+
+      recognitionSupported = true;
+      showMicControl();
+    } catch (err) {
+      recognitionSupported = false;
+      showManualFallback();
+    }
+  }
+
+  function showMicControl() {
+    document.getElementById('btnMic').style.display = 'inline-block';
+    document.getElementById('micHint').style.display = 'block';
+    document.getElementById('btnCleanUp').style.display = 'none';
+  }
+
+  function showManualFallback() {
+    document.getElementById('btnMic').style.display = 'none';
+    document.getElementById('micHint').style.display = 'none';
+    document.getElementById('btnCleanUp').style.display = 'inline-block';
+  }
+
+  function updateMicButton() {
+    var btn = document.getElementById('btnMic');
+    if (isRecording) {
+      btn.textContent = 'Tap to stop';
+      btn.classList.add('recording');
+    } else {
+      btn.textContent = 'Tap to start listening';
+      btn.classList.remove('recording');
+    }
+  }
+
+  function startRecording() {
+    if (!recognition) return;
+    try {
+      recognitionSegments = [];
+      confirmedBuffer = '';
+      interimBuffer = '';
+      document.getElementById('rawTranscript').value = '';
+      recognition.start();
+      isRecording = true;
+      updateMicButton();
+    } catch (err) {
+      recognitionSupported = false;
+      showManualFallback();
+    }
+  }
+
+  function stopRecording() {
+    if (!recognition) return;
+    try {
+      recognition.stop();
+    } catch (err) {
+      /* recognition may already be stopped */
+    }
+    isRecording = false;
+    updateMicButton();
+  }
+
+  document.getElementById('btnMic').addEventListener('click', function () {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  });
+
+  document.getElementById('btnCleanUp').addEventListener('click', function () {
+    parseTranscript();
+  });
+
+  function cleanUnit(text) {
+    text = (text || '').replace(/\b(um+|uh+|erm+)\b/gi, '').replace(/\s{2,}/g, ' ').trim();
+    if (!text) return '';
+    text = text.charAt(0).toUpperCase() + text.slice(1);
+    if (!/[.?!]$/.test(text)) text += '.';
+    return text;
+  }
+
+  function parseTranscript() {
+    var raw = document.getElementById('rawTranscript').value;
+    if (!raw || !raw.trim()) {
+      document.getElementById('parsedTranscript').value = '';
+      return;
+    }
+
+    var units = [];
+    if (recognitionSegments.length > 0) {
+      units = recognitionSegments.map(function (seg) {
+        return { text: seg.text, time: seg.time };
+      });
+    } else {
+      var sentences = raw.split(/(?<=[.?!])\s+/);
+      var now = Date.now();
+      units = sentences.map(function (s) {
+        return { text: s, time: now };
+      });
+    }
+
+    var paragraphs = [];
+    var current = [];
+    var lastTime = null;
+
+    units.forEach(function (u) {
+      var cleaned = cleanUnit(u.text);
+      if (!cleaned) return;
+      if (lastTime !== null && (u.time - lastTime) > 4000) {
+        if (current.length) paragraphs.push(current.join(' '));
+        current = [];
+      }
+      current.push(cleaned);
+      lastTime = u.time;
+    });
+    if (current.length) paragraphs.push(current.join(' '));
+
+    var parsed = paragraphs.join('\n\n');
+    document.getElementById('parsedTranscript').value = parsed;
+    suggestFields(parsed);
+
+    var settings = loadSettings();
+    if (settings.aiEnabled && settings.apiKey) {
+      refineWithAI(parsed, settings);
+    }
+  }
+
+  function suggestFields(parsedText) {
+    if (!parsedText) return;
+    var paragraphs = parsedText.split(/\n\n+/).filter(Boolean);
+    var sentences = [];
+    paragraphs.forEach(function (p) {
+      p.split(/(?<=[.?!])\s+/).forEach(function (s) {
+        if (s.trim()) sentences.push(s.trim());
+      });
+    });
+
+    var actionCues = [
+      /\bi (will|should|need to|plan to|am going to)\b/i,
+      /\bmy action\b/i,
+      /\btake action\b/i,
+      /\bcommit to\b/i,
+      /\bthis week i\b/i
+    ];
+    var takeawayCues = [
+      /\bthe (main point|takeaway|lesson)\b/i,
+      /\bwhat (i|we) (learned|need to remember)\b/i,
+      /\bkey (point|message)\b/i,
+      /\bthe point is\b/i
+    ];
+
+    var actionSentence = sentences.find(function (s) {
+      return actionCues.some(function (re) { return re.test(s); });
+    });
+    var takeawaySentence = sentences.find(function (s) {
+      return takeawayCues.some(function (re) { return re.test(s); });
+    });
+
+    if (!takeawaySentence && paragraphs.length) {
+      var lastParagraphSentences = paragraphs[paragraphs.length - 1]
+        .split(/(?<=[.?!])\s+/)
+        .filter(Boolean);
+      takeawaySentence = lastParagraphSentences[0];
+    }
+
+    var takeawayField = document.getElementById('takeawayInput');
+    var actionField = document.getElementById('actionInput');
+    var takeawayLabel = document.getElementById('takeawaySuggestedLabel');
+    var actionLabel = document.getElementById('actionSuggestedLabel');
+
+    if (takeawaySentence) {
+      takeawayField.value = takeawaySentence;
+      takeawayLabel.textContent = 'Suggested';
+      takeawayLabel.style.display = 'inline';
+    }
+    if (actionSentence) {
+      actionField.value = actionSentence;
+      actionLabel.textContent = 'Suggested';
+      actionLabel.style.display = 'inline';
+    } else {
+      actionField.value = '';
+      actionLabel.style.display = 'none';
+    }
+  }
+
+  function setAIStatus(text, tone) {
+    var el = document.getElementById('aiStatusLine');
+    el.textContent = text;
+    el.className = 'status-line' + (tone ? ' ' + tone : '');
+  }
+
+  async function refineWithAI(parsedText, settings) {
+    setAIStatus('Refining with AI...');
+    try {
+      var resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': settings.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: CLAUDE_MODEL,
+          max_tokens: 300,
+          messages: [{
+            role: 'user',
+            content: 'Read this homily transcript and reply with only a JSON object with two keys, takeaway and actionItem, each a single concise sentence in plain text, no markdown. Transcript: ' + parsedText
+          }]
+        })
+      });
+      if (!resp.ok) throw new Error('bad response');
+      var data = await resp.json();
+      var textBlock = null;
+      if (data.content) {
+        for (var i = 0; i < data.content.length; i++) {
+          if (data.content[i].type === 'text') { textBlock = data.content[i]; break; }
+        }
+      }
+      if (!textBlock) throw new Error('no text block');
+      var cleanJson = textBlock.text.replace(/```json/gi, '').replace(/```/g, '').trim();
+      var parsed = JSON.parse(cleanJson);
+
+      if (parsed.takeaway) {
+        document.getElementById('takeawayInput').value = parsed.takeaway;
+        var tLabel = document.getElementById('takeawaySuggestedLabel');
+        tLabel.textContent = 'AI refined';
+        tLabel.style.display = 'inline';
+      }
+      if (parsed.actionItem) {
+        document.getElementById('actionInput').value = parsed.actionItem;
+        var aLabel = document.getElementById('actionSuggestedLabel');
+        aLabel.textContent = 'AI refined';
+        aLabel.style.display = 'inline';
+      }
+      setAIStatus('AI refinement applied.', 'ok');
+    } catch (err) {
+      setAIStatus('AI refinement unavailable, heuristic suggestions kept.', 'warn');
+    }
+  }
+
+  document.getElementById('btnCopyParsed').addEventListener('click', async function () {
+    var text = document.getElementById('parsedTranscript').value;
+    try {
+      await navigator.clipboard.writeText(text);
+      setAIStatus('Parsed notes copied to clipboard.', 'ok');
+    } catch (err) {
+      setAIStatus('Could not copy automatically. Select the text and copy manually.', 'warn');
+    }
+  });
+
+  document.getElementById('btnEmailEntry').addEventListener('click', function () {
+    var settings = loadSettings();
+    var theme = document.getElementById('themeInput').value.trim();
+    var takeaway = document.getElementById('takeawayInput').value.trim();
+    var action = document.getElementById('actionInput').value.trim();
+    var subject = 'Sermon Notes: ' + confirmedMass.displayName + ' (' + confirmedMass.date + ')';
+    var bodyLines = [
+      'Mass: ' + confirmedMass.displayName,
+      'Date: ' + formatDisplayDate(confirmedMass.date),
+      'Theme: ' + theme,
+      'Takeaway: ' + takeaway,
+      'Action item: ' + action,
+      '',
+      'Full transcript was not included. Copy it separately if you would like to paste it in.'
+    ];
+    var mailto = 'mailto:' + encodeURIComponent(settings.email) +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(bodyLines.join('\n'));
+    window.location.href = mailto;
+  });
+
+  function currentEntryKey() {
+    return editingKey || confirmedMass.date;
+  }
+
+  document.getElementById('btnSaveEntry').addEventListener('click', function () {
+    var entries = loadEntries();
+    var key = currentEntryKey();
+    entries[key] = {
+      date: key,
+      massData: confirmedMass,
+      theme: document.getElementById('themeInput').value.trim(),
+      takeaway: document.getElementById('takeawayInput').value.trim(),
+      actionItem: document.getElementById('actionInput').value.trim(),
+      rawTranscript: document.getElementById('rawTranscript').value,
+      parsedTranscript: document.getElementById('parsedTranscript').value,
+      savedAt: new Date().toISOString()
+    };
+    var ok = saveEntries(entries);
+    setAIStatus(ok ? 'Entry saved.' : 'Could not save. Storage may be full or unavailable.', ok ? 'ok' : 'warn');
+    renderHistoryScreen();
+  });
+
+  document.getElementById('btnBackFromNote').addEventListener('click', function () {
+    if (editingKey) {
+      showScreen('history');
+    } else {
+      showScreen('confirm');
+    }
+  });
+
+  function renderHistoryScreen() {
+    var entries = loadEntries();
+    var keys = Object.keys(entries).sort(function (a, b) { return b.localeCompare(a); });
+    var listEl = document.getElementById('historyList');
+    listEl.innerHTML = '';
+    if (keys.length === 0) {
+      var empty = document.createElement('p');
+      empty.className = 'empty-note';
+      empty.textContent = 'No entries saved yet.';
+      listEl.appendChild(empty);
+      return;
+    }
+    keys.forEach(function (key) {
+      var entry = entries[key];
+      var item = document.createElement('div');
+      item.className = 'history-item';
+      var left = document.createElement('div');
+      var dateEl = document.createElement('div');
+      dateEl.className = 'hi-date';
+      dateEl.textContent = formatDisplayDate(key);
+      var nameEl = document.createElement('div');
+      nameEl.className = 'hi-name';
+      nameEl.textContent = entry.massData ? entry.massData.displayName : '';
+      left.appendChild(dateEl);
+      left.appendChild(nameEl);
+      item.appendChild(left);
+      item.addEventListener('click', function () {
+        openHistoryEntry(key);
+      });
+      listEl.appendChild(item);
+    });
+  }
+
+  function openHistoryEntry(key) {
+    var entries = loadEntries();
+    var entry = entries[key];
+    if (!entry) return;
+    editingKey = key;
+    confirmedMass = entry.massData;
+    document.getElementById('themeInput').value = entry.theme || '';
+    document.getElementById('takeawayInput').value = entry.takeaway || '';
+    document.getElementById('actionInput').value = entry.actionItem || '';
+    document.getElementById('rawTranscript').value = entry.rawTranscript || '';
+    document.getElementById('parsedTranscript').value = entry.parsedTranscript || '';
+    document.getElementById('takeawaySuggestedLabel').style.display = 'none';
+    document.getElementById('actionSuggestedLabel').style.display = 'none';
+    document.getElementById('aiStatusLine').textContent = '';
+    recognitionSegments = [];
+    renderNoteScreen();
+    showScreen('note');
+  }
+
+  function goToNewEntry() {
+    editingKey = null;
+    initMassData();
+  }
+
+  document.getElementById('btnHistoryHeader').addEventListener('click', function () {
+    renderHistoryScreen();
+    showScreen('history');
+  });
+  document.getElementById('btnHistoryFooter').addEventListener('click', function () {
+    renderHistoryScreen();
+    showScreen('history');
+  });
+  document.getElementById('btnNewFromHistory').addEventListener('click', goToNewEntry);
+  document.getElementById('btnNewFooter').addEventListener('click', goToNewEntry);
+
+  document.getElementById('btnSettingsHeader').addEventListener('click', openSettings);
+  document.getElementById('btnCloseSettings').addEventListener('click', closeSettings);
+
+  document.getElementById('btnSaveSettings').addEventListener('click', function () {
+    var settings = {
+      email: document.getElementById('settingsEmail').value.trim(),
+      apiKey: document.getElementById('settingsApiKey').value.trim(),
+      aiEnabled: document.getElementById('settingsAiEnabled').checked
+    };
+    saveSettings(settings);
+    closeSettings();
+  });
+
+  function populateSettingsForm() {
+    var settings = loadSettings();
+    document.getElementById('settingsEmail').value = settings.email;
+    document.getElementById('settingsApiKey').value = settings.apiKey;
+    document.getElementById('settingsAiEnabled').checked = settings.aiEnabled;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    populateSettingsForm();
+    setupSpeechRecognition();
+    initMassData();
+  });
+})();
+</script>
+</body>
+</html>
