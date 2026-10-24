@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="manifest" href="https://augustineiacopelli.github.io/appaday/manifests/128.webmanifest">
 <script src="https://augustineiacopelli.github.io/appaday/save.js" defer></script>
+<script src="https://augustineiacopelli.github.io/appaday/keys.js" data-app="128" data-legacy-key="sermonNoteCatcherSettings:apiKey" data-accent="#6A4C93" defer></script>
 <title>Sermon Note Catcher | AppADay 128</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -411,11 +412,7 @@
       <input type="checkbox" id="settingsAiEnabled">
       <label for="settingsAiEnabled">Use Claude to refine takeaway and action item</label>
     </div>
-    <div class="field-group">
-      <label for="settingsApiKey">Claude API key</label>
-      <input type="password" id="settingsApiKey" placeholder="sk-ant-...">
-      <p class="small-note">Stored only on this device. Never shown on the main screen.</p>
-    </div>
+    <div class="field-group" id="keyMount"><p class="small-note">The key manager is loading. If this stays, check your connection and reload.</p></div>
     <div class="btn-row">
       <button class="btn btn-primary btn-block" id="btnSaveSettings">Save settings</button>
     </div>
@@ -517,14 +514,13 @@
   }
 
   function loadSettings() {
-    var defaults = { email: '', apiKey: '', aiEnabled: false };
+    var defaults = { email: '', aiEnabled: false };
     try {
       var raw = localStorage.getItem(STORAGE_SETTINGS_KEY);
       if (!raw) return defaults;
       var parsed = JSON.parse(raw);
       return {
         email: parsed.email || '',
-        apiKey: parsed.apiKey || '',
         aiEnabled: !!parsed.aiEnabled
       };
     } catch (err) {
@@ -954,7 +950,7 @@
     suggestFields(parsed);
 
     var settings = loadSettings();
-    if (settings.aiEnabled && settings.apiKey) {
+    if (settings.aiEnabled && window.AppKeys && window.AppKeys.has()) {
       refineWithAI(parsed, settings);
     }
   }
@@ -1026,11 +1022,13 @@
   async function refineWithAI(parsedText, settings) {
     setAIStatus('Refining with AI...');
     try {
+      var apiKey = await window.AppKeys.get();
+      if (!apiKey) { setAIStatus(''); return; }
       var resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': settings.apiKey,
+          'x-api-key': apiKey,
           'anthropic-version': '2023-06-01',
           'anthropic-dangerous-direct-browser-access': 'true'
         },
@@ -1202,13 +1200,15 @@
   document.getElementById('btnNewFromHistory').addEventListener('click', goToNewEntry);
   document.getElementById('btnNewFooter').addEventListener('click', goToNewEntry);
 
-  document.getElementById('btnSettingsHeader').addEventListener('click', openSettings);
+  document.getElementById('btnSettingsHeader').addEventListener('click', function () {
+    if (window.AppKeys) window.AppKeys.mountSettings(document.getElementById('keyMount'));
+    openSettings();
+  });
   document.getElementById('btnCloseSettings').addEventListener('click', closeSettings);
 
   document.getElementById('btnSaveSettings').addEventListener('click', function () {
     var settings = {
       email: document.getElementById('settingsEmail').value.trim(),
-      apiKey: document.getElementById('settingsApiKey').value.trim(),
       aiEnabled: document.getElementById('settingsAiEnabled').checked
     };
     saveSettings(settings);
@@ -1218,7 +1218,6 @@
   function populateSettingsForm() {
     var settings = loadSettings();
     document.getElementById('settingsEmail').value = settings.email;
-    document.getElementById('settingsApiKey').value = settings.apiKey;
     document.getElementById('settingsAiEnabled').checked = settings.aiEnabled;
   }
 
