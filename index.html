@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="manifest" href="https://augustineiacopelli.github.io/appaday/manifests/128.webmanifest">
 <script src="https://augustineiacopelli.github.io/appaday/save.js" defer></script>
+<script src="https://augustineiacopelli.github.io/appaday/models.js"></script>
 <script src="https://augustineiacopelli.github.io/appaday/keys.js" data-app="128" data-legacy-key="sermonNoteCatcherSettings:apiKey" data-accent="#6A4C93" defer></script>
 <title>Sermon Note Catcher | AppADay 128</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -426,7 +427,7 @@
 (function () {
   'use strict';
 
-  var CLAUDE_MODEL = 'claude-sonnet-5';
+  var CLAUDE_MODEL = (window.AppModels ? window.AppModels.id('sonnet') : '');
   var STORAGE_ENTRIES_KEY = 'sermonNoteCatcherEntries';
   var STORAGE_SETTINGS_KEY = 'sermonNoteCatcherSettings';
 
@@ -1228,15 +1229,6 @@
   });
 })();
 
-async function getModel(tier = 'sonnet') {
-  try {
-    const response = await fetch('../config.json');
-    const config = await response.json();
-    return config.models[tier];
-  } catch {
-    return 'claude-sonnet-5-5';
-  }
-}
 </script>
 </body>
 </html>
